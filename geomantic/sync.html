@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Геомантичний Асистент 4.7</title>
+    <style>
+        :root { --bg: #0b0e14; --gold: #d4af37; --blue: #58a6ff; --card: #1c2128; --green: #3fb950; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #adbac7; padding: 20px; display: flex; justify-content: center; margin:0; }
+        .app-container { max-width: 950px; width: 100%; text-align: center; }
+        h1 { color: var(--gold); letter-spacing: 2px; }
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+        @media (min-width: 600px) { .input-group { flex-direction: row; } }
+        input { flex: 1; padding: 15px; border-radius: 8px; border: 2px solid #444c56; background: #22272e; color: white; outline: none; font-size: 1rem; }
+        button { padding: 15px 25px; background: var(--gold); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #f1c40f; transform: scale(1.02); }
+        
+        #resonance { background: rgba(88, 166, 255, 0.05); border: 2px solid var(--blue); padding: 25px; border-radius: 15px; margin: 25px 0; display: none; text-align: left; }
+        .shared-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+        .shared-item { background: var(--bg); border-left: 3px solid var(--gold); padding: 10px; border-radius: 4px; }
+        .shared-sym { font-size: 1.6rem; color: var(--gold); margin-right: 10px; vertical-align: middle; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .stats-card { background: #1c2128; border: 1px solid var(--gold); padding: 20px; border-radius: 12px; text-align: left; position: relative; }
+        .type-badge { font-size: 0.75rem; background: var(--gold); color: black; padding: 3px 10px; border-radius: 20px; position: absolute; top: 20px; right: 20px; font-weight: bold; }
+        .stat-bar-bg { background: #0b0e14; height: 10px; border-radius: 5px; margin: 8px 0 15px; overflow: hidden; }
+        .stat-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1.5s; }
+        .advice { margin-top: 20px; padding: 15px; border-top: 1px dashed var(--blue); color: var(--blue); font-style: italic; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <h1>ГЕОМАНТИЧНИЙ АСИСТЕНТ 4.7</h1>
+    
+    <div class="input-group">
+        <input type="text" id="name1" placeholder="Ваше ім'я (напр. Олександр)">
+        <input type="text" id="name2" placeholder="Друге ім'я (напр. Олена чи Ангеліна)">
+        <button onclick="compare()">СИНХРОНІЗУВАТИ</button>
+    </div>
+
+    <div id="resonance"></div>
+    <div id="statsDisplay" class="stats-grid"></div>
+</div>
+
+<script>
+    const dictionary = {
+        'а': ['ᚨ', 'Ansuz', 'Мудрість та Слово', 10, 95, 40], 'б': ['ᛒ', 'Berkano', 'Ріст та Захист', 40, 50, 85], 
+        'в': ['ᚹ', 'Wunjo', 'Радість та Світло', 30, 70, 50], 'г': ['ᚼ', 'Hagalaz', 'Трансформація', 85, 30, 20], 
+        'д': ['ᛞ', 'Dagaz', 'Прорив та Світанок', 75, 80, 30], 'е': ['ᛖ', 'Ehwaz', 'Рух та Довіра', 50, 65, 55],
+        'є': ['ᛖ', 'Ehwaz', 'Енергія та Партнерство', 50, 65, 55], 'ж': ['ᛉ', 'Algiz', 'Захист та Опіка', 20, 40, 100], 
+        'з': ['ᛉ', 'Algiz', 'Зв\'язок з Небом', 20, 40, 100], 'и': ['ᛁ', 'Isa', 'Спокій та Концентрація', 35, 55, 75], 
+        'і': ['ᛁ', 'Isa', 'Внутрішня Вісь', 35, 55, 75], 'й': ['ᛃ', 'Jera', 'Цикл та Врожай', 45, 60, 40],
+        'к': ['ᚲ', 'Kenaz', 'Вогонь Знань', 20, 100, 20], 'л': ['ᛚ', 'Laguz', 'Потік та Інтуїція', 40, 85, 40], 
+        'м': ['ᛗ', 'Mannaz', 'Людина та Розум', 50, 90, 45], 'н': ['ᚾ', 'Nauthiz', 'Воля та Стійкість', 70, 40, 65], 
+        'о': ['ᛟ', 'Othala', 'Спадщина та Дім', 40, 50, 95], 'п': ['ᛈ', 'Perthro', 'Доля та Гра', 30, 75, 60],
+        'р': ['ᚱ', 'Raido', 'Шлях та Ритм', 65, 55, 45], 'с': ['ᛊ', 'Sowilo', 'Сонце та Успіх', 100, 60, 50], 
+        'т': ['ᛏ', 'Tiwaz', 'Честь та Воля', 95, 45, 75], 'у': ['ᚢ', 'Uruz', 'Міць та Здоров\'я', 100, 20, 60], 
+        'ф': ['ᚠ', 'Fehu', 'Ресурси та Багатство', 55, 45, 40], 'х': ['ᚼ', 'Hagalaz', 'Очищення', 85, 30, 20], 
+        'я': ['ᛃ', 'Jera', 'Завершення та Плід', 45, 60, 40]
+    };
+
+    function analyze(name) {
+        let res = { pwr: 0, int: 0, def: 0, count: 0, runeDetails: {} };
+        [...name.toLowerCase()].forEach(c => {
+            if (dictionary[c]) {
+                const [s, n, d, p, i, df] = dictionary[c];
+                res.pwr += p; res.int += i; res.def += df; res.count++;
+                res.runeDetails[s] = { name: n, desc: d };
+            }
+        });
+        if (res.count > 0) {
+            res.avgP = res.pwr / res.count; res.avgI = res.int / res.count; res.avgD = res.def / res.count;
+            res.type = getTypeName(res.avgP, res.avgI, res.avgD);
+        }
+        return res;
+    }
+
+    function getTypeName(p, i, d) {
+        if (d > i && d > p) return "ХРАНИТЕЛЬ";
+        if (i > p && i > d) return "АРХІТЕКТОР";
+        if (p > i && p > d) return "ВОЇН";
+        return "ГАРМОНІЗАТОР";
+    }
+
+    function compare() {
+        const name1 = document.getElementById('name1').value;
+        const name2 = document.getElementById('name2').value;
+        const a1 = analyze(name1); const a2 = analyze(name2);
+        const resDiv = document.getElementById('resonance');
+        const statsDisplay = document.getElementById('statsDisplay');
+        
+        statsDisplay.innerHTML = '';
+        if (a1.count > 0 && a2.count > 0) {
+            resDiv.style.display = 'block';
+            const sharedSymbols = Object.keys(a1.runeDetails).filter(s => a2.runeDetails[s]);
+            const score = 100 - (Math.abs(a1.avgI - a2.avgI) * 0.4);
+
+            resDiv.innerHTML = `<h2 style="color:var(--blue); margin-top:0;">СИНХРОНІЗАЦІЯ: ${Math.round(score)}%</h2>`;
+            
+            if (sharedSymbols.length > 0) {
+                resDiv.innerHTML += `<p><strong>Спільні енергетичні вузли:</strong></p>
+                <div class="shared-grid">` + 
+                sharedSymbols.map(s => `<div class="shared-item"><span class="shared-sym">${s}</span><strong>${a1.runeDetails[s].name}</strong>: ${a1.runeDetails[s].desc}</div>`).join('') + `</div>`;
+            } else {
+                resDiv.innerHTML += `<p>Ваші коди унікальні, що створює баланс протилежностей.</p>`;
+            }
+
+            const jointType = (a1.avgI + a2.avgI) > (a1.avgP + a2.avgP) ? "Інтелектуальний союз" : "Синергія дії";
+            resDiv.innerHTML += `<div class="advice">Порада для пари: Ваш союз — це ${jointType}. Використовуйте спільні точки резонансу для стабілізації "Брами" вашого дому.</div>`;
+
+            showStats(a1, name1);
+            showStats(a2, name2);
+        }
+    }
+
+    function showStats(data, name) {
+        statsDisplay.innerHTML += `
+            <div class="stats-card">
+                <span class="type-badge">${data.type}</span>
+                <strong style="color:var(--gold); font-size: 1.2rem;">${name.toUpperCase()}</strong>
+                <div style="margin-top:20px;">СИЛА <div class="stat-bar-bg"><div class="stat-bar" style="width:${data.avgP}%"></div></div></div>
+                <div>РОЗУМ <div class="stat-bar-bg"><div class="stat-bar" style="width:${data.avgI}%; background:var(--blue)"></div></div></div>
+                <div>ЗАХИСТ <div class="stat-bar-bg"><div class="stat-bar" style="width:${data.avgD}%; background:var(--green)"></div></div></div>
+            </div>`;
+    }
+</script>
+</body>
+</html>

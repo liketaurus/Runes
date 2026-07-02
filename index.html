@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Геомантичний Асистент 3.1</title>
+    <style>
+        :root {
+            --bg: #0b0e14; --gold: #d4af37; --blue: #58a6ff; --card: #1c2128; --green: #3fb950;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #adbac7; padding: 20px; display: flex; justify-content: center; margin:0; }
+        .app-container { max-width: 900px; width: 100%; text-align: center; }
+        h1 { color: var(--gold); letter-spacing: 2px; text-transform: uppercase; }
+        
+        /* Секція прогнозу */
+        #dailyRune { margin: 20px auto; padding: 20px; border: 2px solid var(--green); border-radius: 15px; display: none; max-width: 500px; background: #0d1a10; }
+        
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+        @media (min-width: 600px) { .input-group { flex-direction: row; } }
+        
+        input { flex: 1; padding: 15px; border-radius: 8px; border: 2px solid #444c56; background: #22272e; color: white; font-size: 1.1rem; outline: none; }
+        input:focus { border-color: var(--blue); }
+        
+        button { padding: 15px 25px; background: var(--gold); color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #f1c40f; transform: scale(1.02); }
+        .btn-daily { background: var(--blue); margin-bottom: 20px; color: white; }
+
+        /* Графіки */
+        .stats-card { background: #1c2128; border: 1px solid var(--gold); padding: 20px; border-radius: 12px; margin: 20px auto; max-width: 500px; text-align: left; }
+        .stat-row { margin: 10px 0; }
+        .stat-label { display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .stat-bar-bg { background: #0b0e14; height: 12px; border-radius: 6px; margin-top: 5px; overflow: hidden; }
+        .stat-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s ease-in-out; }
+
+        /* Картки рун */
+        .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 30px; }
+        .rune-card { background: var(--card); border: 1px solid #444c56; border-radius: 10px; padding: 15px; transition: 0.3s; }
+        .rune-card:hover { border-color: var(--blue); transform: translateY(-3px); }
+        .rune-char { font-size: 3.5rem; color: var(--blue); display: block; margin-bottom: 5px; text-shadow: 0 0 10px rgba(88,166,255,0.3); }
+        .rune-name { color: var(--gold); font-weight: bold; display: block; margin-bottom: 5px; }
+        .rune-desc { font-size: 0.8rem; line-height: 1.4; color: #adbac7; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h1>Геомантичний Асистент 3.1</h1>
+    
+    <button class="btn-daily" onclick="generateDaily()">ᛉ ОТРИМАТИ ПРОГНОЗ ДНЯ</button>
+    <div id="dailyRune">
+        <h3 style="color: var(--green); margin-top:0;">СЬОГОДНІШНІЙ КОД</h3>
+        <div id="dailyContent"></div>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="wordInput" placeholder="Введіть ім'я (Олександр, Олена...)" onkeydown="if(event.key==='Enter') process()">
+        <button onclick="process()">АНАЛІЗУВАТИ</button>
+    </div>
+
+    <div id="statsDisplay"></div>
+    <div id="display" class="results"></div>
+</div>
+
+<script>
+    const dictionary = {
+        'а': ['ᚨ', 'Ansuz', 'Мудрість, божественне послання, сила слова.', 10, 95, 40],
+        'б': ['ᛒ', 'Berkano', 'Ріст, відродження, захист родини.', 40, 50, 85],
+        'в': ['ᚹ', 'Wunjo', 'Радість, гармонія, виконання бажань.', 30, 70, 50],
+        'г': ['ᚼ', 'Hagalaz', 'Трансформація через виклики та шторми.', 85, 30, 20],
+        'д': ['ᛞ', 'Dagaz', 'Прорив, світло дня, повне перетворення.', 75, 80, 30],
+        'е': ['ᛖ', 'Ehwaz', 'Рух, партнерство, зв\'язок між світами.', 50, 65, 55],
+        'є': ['ᛖ', 'Ehwaz', 'Світло, рух, розвиток.', 50, 65, 55],
+        'ж': ['ᛉ', 'Algiz', 'Вищий захист, антена до вищих світів.', 20, 40, 100],
+        'з': ['ᛉ', 'Algiz', 'Захист, опіка богів.', 20, 40, 100],
+        'и': ['ᛁ', 'Isa', 'Лід, спокій, концентрація, стазис.', 35, 55, 75],
+        'і': ['ᛁ', 'Isa', 'Внутрішня вісь, самоконтроль.', 35, 55, 75],
+        'й': ['ᛃ', 'Jera', 'Циклічність, врожай, справедливий результат.', 45, 60, 40],
+        'к': ['ᚲ', 'Kenaz', 'Факел, вогонь знань, творча іскра.', 20, 100, 20],
+        'л': ['ᛚ', 'Laguz', 'Потік, вода, інтуїція, життєва сила.', 40, 85, 40],
+        'м': ['ᛗ', 'Mannaz', 'Людина, інтелект, соціальні зв\'язки.', 50, 90, 45],
+        'н': ['ᚾ', 'Nauthiz', 'Воля, витримка, подолання обмежень.', 70, 40, 65],
+        'о': ['ᛟ', 'Othala', 'Дім, коріння, родова пам\'ять.', 40, 50, 95],
+        'п': ['ᛈ', 'Perthro', 'Доля, таємниця, гра ймовірностей.', 30, 75, 60],
+        'р': ['ᚱ', 'Raido', 'Шлях, подорож, космічний ритм.', 65, 55, 45],
+        'с': ['ᛊ', 'Sowilo', 'Сонце, перемога, чиста енергія.', 100, 60, 50],
+        'т': ['ᛏ', 'Tiwaz', 'Справедливість, стійкість, дух воїна.', 95, 45, 75],
+        'у': ['ᚢ', 'Uruz', 'Первісна міць, фізичне здоров\'я.', 100, 20, 60],
+        'ф': ['ᚠ', 'Fehu', 'Ресурс, багатство, енергія росту.', 55, 45, 40],
+        'х': ['ᚼ', 'Hagalaz', 'Руйнування старого задля нового.', 85, 30, 20],
+        'я': ['ᛃ', 'Jera', 'Успішне завершення циклу.', 45, 60, 40]
+    };
+
+    function generateDaily() {
+        const keys = Object.keys(dictionary);
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        const [sym, name, desc] = dictionary[randomKey];
+        const dailyDiv = document.getElementById('dailyRune');
+        dailyDiv.style.display = 'block';
+        document.getElementById('dailyContent').innerHTML = `
+            <span class="rune-char" style="font-size: 4rem;">${sym}</span>
+            <strong style="color:var(--gold); font-size: 1.2rem;">${name}</strong><br>
+            <p style="margin-top:10px;">${desc}</p>
+        `;
+    }
+
+    function process() {
+        const text = document.getElementById('wordInput').value.toLowerCase();
+        const display = document.getElementById('display');
+        const statsDisplay = document.getElementById('statsDisplay');
+        
+        display.innerHTML = '';
+        statsDisplay.innerHTML = '';
+        
+        let totals = { pwr: 0, int: 0, def: 0, count: 0 };
+
+        [...text].forEach(char => {
+            if (dictionary[char]) {
+                const [sym, name, desc, pwr, int, def] = dictionary[char];
+                totals.pwr += pwr; totals.int += int; totals.def += def; totals.count++;
+
+                display.innerHTML += `
+                    <div class="rune-card">
+                        <span class="rune-char">${sym}</span>
+                        <span class="rune-name">${name}</span>
+                        <span class="rune-desc">${desc}</span>
+                    </div>`;
+            }
+        });
+
+        if (totals.count > 0) {
+            const avgP = Math.round(totals.pwr / totals.count);
+            const avgI = Math.round(totals.int / totals.count);
+            const avgD = Math.round(totals.def / totals.count);
+
+            statsDisplay.innerHTML = `
+                <div class="stats-card">
+                    <strong style="color:var(--gold); display:block; margin-bottom:15px; text-align:center;">ЕНЕРГОБАЛАНС ОБ'ЄКТА</strong>
+                    <div class="stat-row">
+                        <div class="stat-label"><span>СИЛА (Power)</span><span>${avgP}%</span></div>
+                        <div class="stat-bar-bg"><div class="stat-bar" style="width:${avgP}%"></div></div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label"><span>РОЗУМ (Intellect)</span><span>${avgI}%</span></div>
+                        <div class="stat-bar-bg"><div class="stat-bar" style="width:${avgI}%"></div></div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label"><span>ЗАХИСТ (Defense)</span><span>${avgD}%</span></div>
+                        <div class="stat-bar-bg"><div class="stat-bar" style="width:${avgD}%"></div></div>
+                    </div>
+                    <p style="font-size:0.85rem; margin-top:15px; color:var(--blue); font-style:italic; text-align:center;">
+                        ${avgI > avgP ? "Тип 'Архітектор Світів': домінування логіки та знань." : "Тип 'Хранитель Шляху': висока стійкість та енергія дії."}
+                    </p>
+                </div>`;
+        }
+    }
+</script>
+</body>
+</html>

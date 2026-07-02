@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рунічний Транслятор 2.0</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --gold: #d4af37;
+            --blue: #58a6ff;
+            --card: #1c2128;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: #adbac7;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 { color: var(--gold); letter-spacing: 3px; font-size: 1.8rem; }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        @media (min-width: 600px) {
+            .input-group { flex-direction: row; }
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #444c56;
+            background: #22272e;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: var(--gold);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #f1c40f; transform: scale(1.02); }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .rune-card {
+            background: var(--card);
+            border: 1px solid #444c56;
+            border-radius: 10px;
+            padding: 15px;
+            transition: 0.3s;
+        }
+
+        .rune-card:hover { border-color: var(--blue); box-shadow: 0 0 15px rgba(88,166,255,0.2); }
+
+        .rune-char {
+            font-size: 3rem;
+            color: var(--blue);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .rune-info strong { color: var(--gold); display: block; margin-bottom: 5px; }
+        .rune-info p { font-size: 0.8rem; margin: 0; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h1>ГЕОМАНТИЧНИЙ КОД</h1>
+    <p>Введіть слово для розшифровки шарів реальності</p>
+
+    <div class="input-group">
+        <input type="text" id="wordInput" placeholder="Олександр, Олена, Полтава..." autocomplete="off">
+        <button id="runBtn">ПОКАЗАТИ</button>
+    </div>
+
+    <div id="display" class="results"></div>
+</div>
+
+<script>
+    const dictionary = {
+        'а': ['ᚨ', 'Ansuz', 'Мудрість, божественний сигнал.'],
+        'б': ['ᛒ', 'Berkano', 'Ріст, відродження, захист.'],
+        'в': ['ᚹ', 'Wunjo', 'Радість, гармонія, успіх.'],
+        'г': ['ᚼ', 'Hagalaz', 'Трансформація через виклик.'],
+        'д': ['ᛞ', 'Dagaz', 'Прорив, світло дня, зміна.'],
+        'е': ['ᛖ', 'Ehwaz', 'Рух, партнерство, кінь.'],
+        'є': ['ᛖ', 'Ehwaz', 'Енергія руху та світла.'],
+        'ж': ['ᛉ', 'Algiz', 'Захист, вища опіка.'],
+        'з': ['ᛉ', 'Algiz', 'Захист, зв\'язок з небом.'],
+        'и': ['ᛁ', 'Isa', 'Лід, статика, концентрація.'],
+        'і': ['ᛁ', 'Isa', 'Спокій, внутрішня вісь.'],
+        'й': ['ᛃ', 'Jera', 'Цикл, врожай, результат.'],
+        'к': ['ᚲ', 'Kenaz', 'Вогонь знань, факел.'],
+        'л': ['ᛚ', 'Laguz', 'Потік, вода, інтуїція.'],
+        'м': ['ᛗ', 'Mannaz', 'Людина, інтелект, свідомість.'],
+        'н': ['ᚾ', 'Nauthiz', 'Воля, подолання нужди.'],
+        'о': ['ᛟ', 'Othala', 'Спадщина, дім, коріння.'],
+        'п': ['ᛈ', 'Perthro', 'Доля, таємниця, гра.'],
+        'р': ['ᚱ', 'Raido', 'Шлях, ритм, подорож.'],
+        'с': ['ᛊ', 'Sowilo', 'Сонце, перемога, сила.'],
+        'т': ['ᛏ', 'Tiwaz', 'Справедливість, воїн, мета.'],
+        'у': ['ᚢ', 'Uruz', 'Сила, здоров\'я, міць.'],
+        'ф': ['ᚠ', 'Fehu', 'Ресурс, майно, багатство.'],
+        'х': ['ᚼ', 'Hagalaz', 'Руйнування старого.'],
+        'я': ['ᛃ', 'Jera', 'Завершення циклу.'],
+        ' ': [' ', '', '']
+    };
+
+    const runBtn = document.getElementById('runBtn');
+    const wordInput = document.getElementById('wordInput');
+    const display = document.getElementById('display');
+
+    function process() {
+        const text = wordInput.value.toLowerCase();
+        display.innerHTML = '';
+        
+        [...text].forEach(char => {
+            if (dictionary[char]) {
+                const [sym, name, desc] = dictionary[char];
+                if (sym === ' ') return;
+                
+                const card = document.createElement('div');
+                card.className = 'rune-card';
+                card.innerHTML = `
+                    <span class="rune-char">${sym}</span>
+                    <div class="rune-info">
+                        <strong>${name}</strong>
+                        <p>${desc}</p>
+                    </div>
+                `;
+                display.appendChild(card);
+            }
+        });
+    }
+
+    // Два методи запуску для надійності
+    runBtn.addEventListener('click', process);
+    wordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') process();
+    });
+</script>
+
+</body>
+</html>
