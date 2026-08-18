@@ -29,9 +29,37 @@
         .stat-bar { height: 100%; border-radius: 5px; background: var(--gold); transition: width 1s; }
         
         #dailyRune { margin-top: 20px; padding: 20px; border: 2px solid var(--green); border-radius: 15px; display: none; }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            color: rgba(212, 175, 55, 0.6);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .back-button:hover {
+            background: rgba(212, 175, 55, 0.25);
+            border-color: rgba(212, 175, 55, 0.5);
+            color: rgba(212, 175, 55, 0.9);
+        }
     </style>
 </head>
 <body>
+
+<a href="index.html" class="back-button" title="Повернутись до меню">←</a>
 
 <div class="app-container">
     <h1>ГЕОМАНТИЧНИЙ АСИСТЕНТ</h1>
@@ -121,7 +149,7 @@
                     <div>Розум: ${Math.round(avgI)}% <div class="stat-bar-bg"><div class="stat-bar" style="width:${avgI}%"></div></div></div>
                     <div>Захист: ${Math.round(avgD)}% <div class="stat-bar-bg"><div class="stat-bar" style="width:${avgD}%"></div></div></div>
                     <p style="font-size:0.8rem; margin-top:10px; color:var(--blue);">
-                        ${avgI > avgP ? "Конфігурація 'Мудрець': високий інтелектуальний потенціал." : "Конфігурація 'Воїн': сильний вплив на фізичний світ."}
+                        ${avgI > avgP ? "Конфігурація 'Мудрець': високий інтелектуальний потенціал." : "Конфігурація 'Воїн': си[...]
                     </p>
                 </div>`;
         }
