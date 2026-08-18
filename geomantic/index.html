@@ -1,1 +1,123 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Геомантичний Лончер</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --gold: #d4af37;
+            --blue: #58a6ff;
+            --card: #1c2128;
+            --text: #adbac7;
+            --border: #444c56;
+        }
 
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--gold);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--blue);
+            margin-bottom: 35px;
+        }
+
+        .launcher-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 700px) {
+            .launcher-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .launch-btn {
+            display: block;
+            width: 100%;
+            padding: 20px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            text-decoration: none;
+            transition: 0.25s ease;
+        }
+
+        .launch-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--blue);
+            box-shadow: 0 0 16px rgba(88, 166, 255, 0.2);
+        }
+
+        .launch-title {
+            display: block;
+            color: var(--gold);
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .launch-desc {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .footer-note {
+            margin-top: 22px;
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+    </style>
+</head>
+<body>
+    <main class="app-container">
+        <h1>ГЕОМАНТИЧНИЙ АСИСТЕНТ</h1>
+        <p class="subtitle">Оберіть модуль для роботи з рунічним кодом</p>
+
+        <section class="launcher-grid">
+            <a class="launch-btn" href="./prediction.html">
+                <span class="launch-title">ПРОГНОЗ</span>
+                <span class="launch-desc">Аналіз імені та руна дня з енергетичним балансом.</span>
+            </a>
+
+            <a class="launch-btn" href="./translate.html">
+                <span class="launch-title">ТРАНСЛЯТОР</span>
+                <span class="launch-desc">Розшифровка слів через відповідність символам рун.</span>
+            </a>
+
+            <a class="launch-btn" href="./sync.html">
+                <span class="launch-title">СИНХРОНІЗАЦІЯ</span>
+                <span class="launch-desc">Порівняння двох імен та визначення резонансу пари.</span>
+            </a>
+        </section>
+
+        <p class="footer-note">ᛟ Код реальності активовано ᛟ</p>
+    </main>
+</body>
+</html>
