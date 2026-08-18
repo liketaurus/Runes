@@ -26,38 +26,9 @@
         .stat-bar-bg { background: #0b0e14; height: 10px; border-radius: 5px; margin: 8px 0 15px; overflow: hidden; }
         .stat-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1.5s; }
         .advice { margin-top: 20px; padding: 15px; border-top: 1px dashed var(--blue); color: var(--blue); font-style: italic; }
-        
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(212, 175, 55, 0.15);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 8px;
-            color: rgba(212, 175, 55, 0.6);
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-        
-        .back-button:hover {
-            background: rgba(212, 175, 55, 0.25);
-            border-color: rgba(212, 175, 55, 0.5);
-            color: rgba(212, 175, 55, 0.9);
-        }
     </style>
 </head>
 <body>
-
-<a href="index.html" class="back-button" title="Повернутись до меню">←</a>
-
 <div class="app-container">
     <h1>ГЕОМАНТИЧНИЙ АСИСТЕНТ 4.7</h1>
     
@@ -135,7 +106,7 @@
             }
 
             const jointType = (a1.avgI + a2.avgI) > (a1.avgP + a2.avgP) ? "Інтелектуальний союз" : "Синергія дії";
-            resDiv.innerHTML += `<div class="advice">Порада для пари: Ваш союз — це ${jointType}. Використовуйте спільні точки резонансу для зміцнення зв'язку.</div>`;
+            resDiv.innerHTML += `<div class="advice">Порада для пари: Ваш союз — це ${jointType}. Використовуйте спільні точки резонансу для стабілізації "Брами" вашого дому.</div>`;
 
             showStats(a1, name1);
             showStats(a2, name2);
